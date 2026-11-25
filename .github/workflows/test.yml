@@ -1,0 +1,23 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 检查脚本语法
+        run: bash -n fail2ban.sh
+
+      - name: 函数级单元测试
+        run: bash tests/test_units.sh
+
+      - name: 写入 / 回滚 / 菜单测试（需 root 验证权限继承）
+        run: sudo bash tests/test_units2.sh

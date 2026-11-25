@@ -1,5 +1,7 @@
 # fail2ban.sh — Fail2ban 交互式管理脚本
 
+[![tests](https://github.com/mocchen/fail2ban-shell/actions/workflows/test.yml/badge.svg?branch=mochen)](https://github.com/mocchen/fail2ban-shell/actions/workflows/test.yml)
+
 一个单文件的 Bash 菜单脚本，用于在一台 Linux 服务器上完成 Fail2ban 的**安装、SSH 防护初始化、参数调整、IP 白名单、手动封禁/解封、服务与日志查看**。
 
 设计目标是「不手写配置文件也不把配置写坏」：所有写入都先备份、用 `fail2ban-client -t` 校验、失败自动回滚，并且只改动目标 Jail 段内的指定选项，其余内容原样保留。
@@ -346,22 +348,22 @@ sudo fail2ban-client -t && sudo fail2ban-client reload
 
 ## 测试
 
-`tests/` 下有三套可直接运行的测试，覆盖脚本的关键逻辑：
+`tests/` 下两套测试都只操作临时目录、用桩命令替代 `fail2ban-client` / `systemctl`，不会碰真实的 `/etc/fail2ban`；GitHub Actions 在每次 push / PR 时自动运行（见 `.github/workflows/test.yml`）。
 
-| 文件 | 覆盖范围 | 副作用 |
-| --- | --- | --- |
-| `tests/test_units.sh` | 输入校验、`current_ignoreip`、`render_config`、`format_config`、`check_overrides`、`prune_backups`、`render_ssh_config` | 无，全部在临时目录 |
-| `tests/test_units2.sh` | `menu`、`merge_ignoreip`、`--dry-run`、`save_config` 的写入 / 取消 / 回滚、新文件权限 | 无，用桩命令替代 `fail2ban-client` / `systemctl` |
-| `tests/test_cli.sh` | `--help` / `--version` / `--check` / `--status`、dry-run、真实写入并 reload、还原 | **会临时改 `/etc/fail2ban/jail.local`**，只应在一次性测试机运行 |
+| 文件 | 覆盖范围 |
+| --- | --- |
+| `tests/test_units.sh` | 输入校验、`current_ignoreip`、`render_config`、`format_config`、`check_overrides`、`prune_backups`、`render_ssh_config` |
+| `tests/test_units2.sh` | `menu`、`merge_ignoreip`、`--dry-run`、`save_config` 的写入 / 取消 / 回滚、新文件权限 |
 
 ```bash
 cd fail2ban
 bash tests/test_units.sh
-sudo bash tests/test_units2.sh
-sudo bash tests/test_cli.sh      # 仅限可随意折腾的测试机
+sudo bash tests/test_units2.sh   # 需要 root：验证 chmod/chown 权限继承
 ```
 
-三套测试都按「断言计数」输出，最后一行形如 `测试完成：64 通过，0 失败`，退出码 0 表示全过。脚本路径可用 `F2B_SCRIPT=/path/to/fail2ban.sh` 覆盖。
+两套测试都按「断言计数」输出，最后一行形如 `测试完成：64 通过，0 失败`，退出码 0 表示全过。脚本路径可用 `F2B_SCRIPT=/path/to/fail2ban.sh` 覆盖。
+
+真机冒烟（写入 → reload → 还原）不在仓库里：它会改 `/etc/fail2ban/jail.local`、依赖具体环境，跑错地方代价太大。需要时在一台一次性测试机上走一遍「菜单 3 → 1」，确认预览、备份、`-t` 校验与生效；想先看结果不落盘，加 `--dry-run`。
 
 ---
 

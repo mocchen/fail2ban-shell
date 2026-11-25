@@ -9,12 +9,11 @@ here=$(cd "$(dirname "$0")" && pwd)
 script=${F2B_SCRIPT:-$here/../fail2ban.sh}
 
 TMP=$(mktemp -d)
-funcs=$TMP/f2b-funcs.sh
 trap 'rm -rf "$TMP"' EXIT
 
-sed '$d' "$script" > "$funcs"
+# 脚本末尾有 BASH_SOURCE 守卫，被 source 时不会执行 main
 # shellcheck disable=SC1090
-source "$funcs"
+source "$script"
 
 CONFIG=$TMP/jail.local
 JAIL_DIR=$TMP/jail.d
