@@ -73,6 +73,8 @@
 
 ## 快速开始
 
+**本地运行**
+
 ```bash
 # 方式一：直接执行
 sudo bash fail2ban.sh
@@ -82,7 +84,23 @@ chmod +x fail2ban.sh
 sudo ./fail2ban.sh
 ```
 
-脚本内已声明 `#!/usr/bin/env bash`，因此两种方式等价。运行环境建议使用 `tmux`/`screen`，避免安装过程断线。
+**直接跑 GitHub 上的版本**
+
+```bash
+# 推荐：先下载，看一眼再执行（脚本以 root 改配置，值得多这一步）
+curl -fsSL https://raw.githubusercontent.com/mocchen/fail2ban-shell/refs/heads/mochen/fail2ban.sh -o /tmp/fail2ban.sh
+sudo bash /tmp/fail2ban.sh
+
+# 没有 curl 时用 wget
+wget -qO /tmp/fail2ban.sh https://raw.githubusercontent.com/mocchen/fail2ban-shell/refs/heads/mochen/fail2ban.sh
+
+# 或者一条命令跑完：内容取回后交给 bash -c，stdin 仍然留给终端
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/mocchen/fail2ban-shell/refs/heads/mochen/fail2ban.sh)"
+```
+
+> **不要用 `curl … | sudo bash`。** 这个脚本全程读终端输入，管道执行时脚本正文会占住 stdin，菜单会立刻读到 EOF 直接退出。上面两种写法都把 stdin 留给终端；`bash -c "$(…)"` 也能正常工作。
+
+脚本内已声明 `#!/usr/bin/env bash`，因此前两种方式等价。运行环境建议使用 `tmux`/`screen`，避免安装过程断线。
 
 安装完成后启动服务并设置开机自启：
 
