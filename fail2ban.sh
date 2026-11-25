@@ -1382,7 +1382,8 @@ main() {
     done
 }
 
-# 只有直接执行时才进入菜单；被 source（如测试脚本）时只加载函数。
-[[ "${BASH_SOURCE[0]}" == "$0" ]] || return 0
-
-main "$@"
+# 被 source 时只加载函数，不执行 main。
+# BASH_SOURCE 为空表示脚本从标准输入读入（bash < file），此时仍应执行。
+if [[ -z "${BASH_SOURCE[0]-}" || "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi
